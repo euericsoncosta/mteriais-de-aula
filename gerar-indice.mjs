@@ -1,100 +1,104 @@
 #!/usr/bin/env node
 /**
- * gerar-indice.js
- * Varre a pasta "disciplinas/" e gera o index.html do portal de materiais.
+ * gerar-indice.mjs  (v2)
  *
- * Convenção de pastas:
- *   disciplinas/
- *     Lógica de Programação/
- *       _disciplina.json            (opcional: titulo, descricao, carga)
- *       Módulo 01 - Introdução/
- *         apostila.pdf
- *         slides.pdf
- *       Módulo 02 - Variáveis/
- *         ...
+ * Varre "disciplinas/", normaliza os nomes de pastas e arquivos para URLs
+ * seguras (sem acento, sem espaço, minúsculas) e gera o index.html.
  *
- * Uso:  node gerar-indice.js
+ * O nome bonito continua aparecendo na tela: a primeira vez que um item é
+ * renomeado, o título original fica guardado em _nomes.json.
+ *
+ * Rodar duas vezes não muda nada. É seguro repetir.
+ *
+ * Uso:  node gerar-indice.mjs
  */
 
-import {
-  readdirSync,
-  statSync,
-  writeFileSync,
-  readFileSync,
-  existsSync,
-} from "node:fs";
-import { join, extname, basename } from "node:path";
+import { readdirSync, statSync, writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
+import { join, extname, basename } from 'node:path';
 
 /* ------------------------------------------------------------------ */
 /* CONFIGURAÇÃO                                                        */
 /* ------------------------------------------------------------------ */
 
 const CONFIG = {
-  escola: "E.E.E.P. Lúcia Helena Viana Ribeiro",
-  rede: "SEDUC-CE · Eixo Informação e Comunicação",
-  professor: "Prof. Francisco Ericson Cornélio da Costa",
-  cidade: "Horizonte, Ceará",
+  escola: 'E.E.E.P. Lúcia Helena Viana Ribeiro',
+  rede: 'SEDUC-CE · Eixo Informação e Comunicação',
+  professor: 'Prof. Francisco Ericson Cornélio da Costa',
+  cidade: 'Horizonte, Ceará',
 
-  // Troque pelos hexes exatos que você já usa nos scripts do pptxgenjs.
+  // Troque pelos hexes exatos da paleta que você usa no pptxgenjs.
   cores: {
-    tinta: "#12263A", // texto principal
-    papel: "#F7F8FA", // fundo
-    cartao: "#FFFFFF", // fundo dos blocos
-    marca: "#0B4F8A", // cor institucional principal
-    apoio: "#1B9A6B", // destaque secundário
-    linha: "#DDE3EA", // bordas
+    tinta: '#12263A',
+    papel: '#F7F8FA',
+    cartao: '#FFFFFF',
+    marca: '#0B4F8A',
+    apoio: '#1B9A6B',
+    linha: '#DDE3EA',
   },
 
-  pastaRaiz: "disciplinas",
-  saida: "index.html",
+  pastaRaiz: 'disciplinas',
+  saida: 'index.html',
+  registro: '_nomes.json',
 
-  // Extensões publicadas. Qualquer outra coisa é ignorada.
-  extensoes: [".pdf", ".pptx", ".docx", ".xlsx", ".zip", ".md", ".txt", ".csv"],
+  extensoes: ['.pdf', '.pptx', '.docx', '.xlsx', '.zip', '.md', '.txt', '.csv'],
 
-  // Trava de segurança: arquivos com estes termos NÃO são publicados.
+  // Arquivos com estes termos no nome NUNCA são publicados nem renomeados.
   bloqueio: [/gabarito/i, /professor/i, /respostas?/i, /docente/i, /_priv/i],
 };
 
 /* ------------------------------------------------------------------ */
+/* NOMES                                                               */
+/* ------------------------------------------------------------------ */
+
+const nomes = existsSync(CONFIG.registro)
+  ? JSON.parse(readFileSync(CONFIG.registro, 'utf8'))
+  : {};
 
 const bloqueados = [];
+const renomeados = [];
 
-const ordenar = (a, b) =>
-  a.localeCompare(b, "pt-BR", { numeric: true, sensitivity: "base" });
-
-const pastas = (dir) =>
-  readdirSync(dir, { withFileTypes: true })
-    .filter(
-      (d) =>
-        d.isDirectory() && !d.name.startsWith("_") && !d.name.startsWith("."),
-    )
-    .map((d) => d.name)
-    .sort(ordenar);
-
-function arquivos(dir) {
-  return readdirSync(dir, { withFileTypes: true })
-    .filter(
-      (d) => d.isFile() && !d.name.startsWith(".") && !d.name.startsWith("_"),
-    )
-    .filter((d) => CONFIG.extensoes.includes(extname(d.name).toLowerCase()))
-    .filter((d) => {
-      const proibido = CONFIG.bloqueio.some((re) => re.test(d.name));
-      if (proibido) bloqueados.push(join(dir, d.name));
-      return !proibido;
-    })
-    .map((d) => {
-      const caminho = join(dir, d.name);
-      const st = statSync(caminho);
-      return {
-        nome: basename(d.name, extname(d.name)),
-        tipo: extname(d.name).slice(1).toLowerCase(),
-        href: caminho.split("/").map(encodeURIComponent).join("/"),
-        tamanho: formatarTamanho(st.size),
-        data: st.mtime,
-      };
-    })
-    .sort((a, b) => ordenar(a.nome, b.nome));
+function paraSlug(texto) {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'item';
 }
+
+/**
+ * Renomeia no disco, se necessário, e devolve o nome final.
+ * Guarda o título original em _nomes.json na primeira vez.
+ */
+function normalizar(pai, nome, ehPasta) {
+  const ext = ehPasta ? '' : extname(nome).toLowerCase();
+  const titulo = ehPasta ? nome : basename(nome, extname(nome));
+  let alvo = paraSlug(titulo) + ext;
+
+  if (alvo !== nome) {
+    let n = 2;
+    while (existsSync(join(pai, alvo))) alvo = `${paraSlug(titulo)}-${n++}${ext}`;
+    renameSync(join(pai, nome), join(pai, alvo));
+    renomeados.push(`${join(pai, nome)}  ->  ${alvo}`);
+  }
+
+  const chave = join(pai, alvo);
+  if (!nomes[chave]) nomes[chave] = titulo;
+  return alvo;
+}
+
+const tituloDe = (caminho, alternativo) => nomes[caminho] || alternativo;
+
+const ordenar = (a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' });
+
+/* ------------------------------------------------------------------ */
+/* LEITURA                                                             */
+/* ------------------------------------------------------------------ */
+
+const subpastas = (dir) =>
+  readdirSync(dir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && !d.name.startsWith('_') && !d.name.startsWith('.'))
+    .map((d) => d.name);
 
 function formatarTamanho(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -102,124 +106,122 @@ function formatarTamanho(bytes) {
   return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 }
 
-const esc = (s) =>
-  String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function lerArquivos(dir) {
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((d) => d.isFile() && !d.name.startsWith('_') && !d.name.startsWith('.'))
+    .filter((d) => CONFIG.extensoes.includes(extname(d.name).toLowerCase()))
+    .filter((d) => {
+      const proibido = CONFIG.bloqueio.some((re) => re.test(d.name));
+      if (proibido) bloqueados.push(join(dir, d.name));
+      return !proibido;
+    })
+    .map((d) => {
+      const arquivo = normalizar(dir, d.name, false);
+      const caminho = join(dir, arquivo);
+      return {
+        titulo: tituloDe(caminho, basename(arquivo, extname(arquivo))),
+        tipo: extname(arquivo).slice(1),
+        href: caminho,
+        tamanho: formatarTamanho(statSync(caminho).size),
+      };
+    })
+    .sort((a, b) => ordenar(a.titulo, b.titulo));
+}
 
 function lerMeta(dir) {
-  const p = join(dir, "_disciplina.json");
+  const p = join(dir, '_disciplina.json');
   if (!existsSync(p)) return {};
   try {
-    return JSON.parse(readFileSync(p, "utf8"));
+    return JSON.parse(readFileSync(p, 'utf8'));
   } catch {
-    console.warn(`  ! _disciplina.json inválido em ${dir}, ignorado`);
+    console.warn(`  ! _disciplina.json invalido em ${dir}, ignorado`);
     return {};
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* LEITURA                                                             */
-/* ------------------------------------------------------------------ */
-
 function coletar() {
   if (!existsSync(CONFIG.pastaRaiz)) {
-    console.error(
-      `Pasta "${CONFIG.pastaRaiz}/" não encontrada. Crie-a e coloque as disciplinas dentro.`,
-    );
+    console.error(`Pasta "${CONFIG.pastaRaiz}/" nao encontrada.`);
     process.exit(1);
   }
 
-  return pastas(CONFIG.pastaRaiz)
-    .map((nomeDisc) => {
-      const dirDisc = join(CONFIG.pastaRaiz, nomeDisc);
-      const meta = lerMeta(dirDisc);
+  const disciplinas = subpastas(CONFIG.pastaRaiz).map((original) => {
+    const pasta = normalizar(CONFIG.pastaRaiz, original, true);
+    const dir = join(CONFIG.pastaRaiz, pasta);
+    const meta = lerMeta(dir);
 
-      const modulos = pastas(dirDisc)
-        .map((nomeMod) => ({
-          nome: nomeMod,
-          itens: arquivos(join(dirDisc, nomeMod)),
-        }))
-        .filter((m) => m.itens.length > 0);
+    const modulos = subpastas(dir)
+      .map((origMod) => {
+        const sub = normalizar(dir, origMod, true);
+        const dirMod = join(dir, sub);
+        return { titulo: tituloDe(dirMod, sub), itens: lerArquivos(dirMod) };
+      })
+      .filter((m) => m.itens.length > 0)
+      .sort((a, b) => ordenar(a.titulo, b.titulo));
 
-      const soltos = arquivos(dirDisc);
-      if (soltos.length)
-        modulos.unshift({ nome: "Materiais gerais", itens: soltos });
+    const soltos = lerArquivos(dir);
+    if (soltos.length) modulos.unshift({ titulo: 'Materiais gerais', itens: soltos });
 
-      return {
-        titulo: meta.titulo || nomeDisc,
-        descricao: meta.descricao || "",
-        carga: meta.carga || "",
-        modulos,
-        total: modulos.reduce((n, m) => n + m.itens.length, 0),
-      };
-    })
-    .filter((d) => d.total > 0);
+    return {
+      titulo: meta.titulo || tituloDe(dir, pasta),
+      descricao: meta.descricao || '',
+      carga: meta.carga || '',
+      modulos,
+      total: modulos.reduce((n, m) => n + m.itens.length, 0),
+    };
+  });
+
+  return disciplinas.filter((d) => d.total > 0).sort((a, b) => ordenar(a.titulo, b.titulo));
 }
 
 /* ------------------------------------------------------------------ */
 /* HTML                                                                */
 /* ------------------------------------------------------------------ */
 
+const esc = (s) =>
+  String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 function render(disciplinas) {
   const c = CONFIG.cores;
-  const agora = new Date().toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  const agora = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const totalArquivos = disciplinas.reduce((n, d) => n + d.total, 0);
 
-  const blocos = disciplinas
-    .map(
-      (d, i) => `
-      <section class="disciplina" data-busca="${esc((d.titulo + " " + d.descricao).toLowerCase())}">
+  const blocos = disciplinas.map((d, i) => `
+      <section class="disciplina" data-busca="${esc((d.titulo + ' ' + d.descricao).toLowerCase())}">
         <header class="disciplina-topo">
-          <span class="ordem">${String(i + 1).padStart(2, "0")}</span>
+          <span class="ordem">${String(i + 1).padStart(2, '0')}</span>
           <div>
             <h2>${esc(d.titulo)}</h2>
-            <p class="meta">${[d.carga, `${d.total} ${d.total === 1 ? "arquivo" : "arquivos"}`].filter(Boolean).map(esc).join(" · ")}</p>
-            ${d.descricao ? `<p class="descricao">${esc(d.descricao)}</p>` : ""}
+            <p class="meta">${[d.carga, `${d.total} ${d.total === 1 ? 'arquivo' : 'arquivos'}`].filter(Boolean).map(esc).join(' &middot; ')}</p>
+            ${d.descricao ? `<p class="descricao">${esc(d.descricao)}</p>` : ''}
           </div>
         </header>
-        ${d.modulos
-          .map(
-            (m) => `
+        ${d.modulos.map((m) => `
         <details class="modulo" open>
           <summary>
-            <span class="modulo-nome">${esc(m.nome)}</span>
+            <span class="modulo-nome">${esc(m.titulo)}</span>
             <span class="contagem">${m.itens.length}</span>
           </summary>
           <ul class="arquivos">
-            ${m.itens
-              .map(
-                (f) => `
-            <li data-busca="${esc((f.nome + " " + m.nome + " " + d.titulo).toLowerCase())}">
-              <a href="${f.href}" download>
+            ${m.itens.map((f) => `
+            <li data-busca="${esc((f.titulo + ' ' + m.titulo + ' ' + d.titulo).toLowerCase())}">
+              <a href="${esc(f.href)}">
                 <span class="tipo tipo-${esc(f.tipo)}">${esc(f.tipo)}</span>
-                <span class="nome">${esc(f.nome)}</span>
+                <span class="nome">${esc(f.titulo)}</span>
                 <span class="tamanho">${esc(f.tamanho)}</span>
               </a>
-            </li>`,
-              )
-              .join("")}
+            </li>`).join('')}
           </ul>
-        </details>`,
-          )
-          .join("")}
-      </section>`,
-    )
-    .join("");
+        </details>`).join('')}
+      </section>`).join('');
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Materiais de aula · ${esc(CONFIG.professor)}</title>
-<meta name="description" content="Apostilas, slides e exercícios das disciplinas do Eixo Informação e Comunicação.">
+<title>Materiais de aula &middot; ${esc(CONFIG.professor)}</title>
+<meta name="description" content="Apostilas, slides e exercicios das disciplinas do Eixo Informacao e Comunicacao.">
 <style>
   :root{
     --tinta:${c.tinta}; --papel:${c.papel}; --cartao:${c.cartao};
@@ -265,8 +267,8 @@ function render(disciplinas) {
   }
   .modulo summary::-webkit-details-marker{display:none}
   .modulo summary:focus-visible{outline:3px solid var(--apoio); outline-offset:2px; border-radius:6px}
-  .modulo-nome::before{content:"▸ "; color:var(--marca)}
-  .modulo[open] .modulo-nome::before{content:"▾ "}
+  .modulo-nome::before{content:"\\25B8 "; color:var(--marca)}
+  .modulo[open] .modulo-nome::before{content:"\\25BE "}
   .contagem{font-size:12px; font-weight:700; color:#5a6a7a; background:var(--papel); border-radius:999px; padding:3px 9px}
 
   ul.arquivos{list-style:none; margin:0 0 10px; padding:0}
@@ -305,22 +307,22 @@ function render(disciplinas) {
   <div class="wrap">
     <p class="rede">${esc(CONFIG.rede)}</p>
     <h1>Materiais de aula</h1>
-    <p class="assinatura">${esc(CONFIG.escola)} · ${esc(CONFIG.professor)}</p>
+    <p class="assinatura">${esc(CONFIG.escola)} &middot; ${esc(CONFIG.professor)}</p>
   </div>
 </header>
 
 <main class="wrap">
   <div class="barra">
-    <input id="busca" type="search" placeholder="Buscar por disciplina, módulo ou arquivo" aria-label="Buscar material">
-    <p class="resumo">${disciplinas.length} ${disciplinas.length === 1 ? "disciplina" : "disciplinas"} · ${totalArquivos} arquivos</p>
+    <input id="busca" type="search" placeholder="Buscar por disciplina, modulo ou arquivo" aria-label="Buscar material">
+    <p class="resumo">${disciplinas.length} ${disciplinas.length === 1 ? 'disciplina' : 'disciplinas'} &middot; ${totalArquivos} arquivos</p>
   </div>
 ${blocos}
   <p class="vazio" id="vazio">Nenhum material corresponde a essa busca. Tente outro termo.</p>
 </main>
 
 <footer class="wrap">
-  <p>${esc(CONFIG.cidade)} · Atualizado em ${esc(agora)}</p>
-  <p>Material de uso didático. Dúvidas sobre os arquivos devem ser tratadas em sala.</p>
+  <p>${esc(CONFIG.cidade)} &middot; Atualizado em ${esc(agora)}</p>
+  <p>Material de uso didatico. Duvidas sobre os arquivos devem ser tratadas em sala.</p>
 </footer>
 
 <script>
@@ -363,25 +365,26 @@ ${blocos}
 }
 
 /* ------------------------------------------------------------------ */
-/* EXECUÇÃO                                                            */
+/* EXECUCAO                                                            */
 /* ------------------------------------------------------------------ */
 
 const disciplinas = coletar();
-writeFileSync(CONFIG.saida, render(disciplinas), "utf8");
-writeFileSync(".nojekyll", "");
 
-console.log(`\n✔ ${CONFIG.saida} gerado`);
-disciplinas.forEach((d) => {
-  console.log(
-    `  · ${d.titulo}: ${d.modulos.length} módulo(s), ${d.total} arquivo(s)`,
-  );
-});
+writeFileSync(CONFIG.saida, render(disciplinas), 'utf8');
+writeFileSync(CONFIG.registro, JSON.stringify(nomes, null, 2), 'utf8');
+writeFileSync('.nojekyll', '');
+
+console.log(`\n[ok] ${CONFIG.saida} gerado`);
+disciplinas.forEach((d) => console.log(`  - ${d.titulo}: ${d.modulos.length} modulo(s), ${d.total} arquivo(s)`));
+
+if (renomeados.length) {
+  console.log(`\n[renomeado] ${renomeados.length} item(ns) ajustado(s) para URL segura:`);
+  renomeados.forEach((r) => console.log(`  - ${r}`));
+}
 
 if (bloqueados.length) {
-  console.log(
-    `\n⚠ ${bloqueados.length} arquivo(s) NÃO publicado(s) pela trava de segurança:`,
-  );
-  bloqueados.forEach((f) => console.log(`  · ${f}`));
-  console.log("  Mova estes arquivos para o repositório privado do professor.");
+  console.log(`\n[bloqueado] ${bloqueados.length} arquivo(s) NAO publicado(s):`);
+  bloqueados.forEach((f) => console.log(`  - ${f}`));
+  console.log('  Mova estes arquivos para o repositorio privado do professor.');
 }
-console.log("");
+console.log('');
