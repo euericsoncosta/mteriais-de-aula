@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materiais de aula · Prof. Francisco Ericson Cornélio da Costa</title>
+<meta name="description" content="Apostilas, slides e exercícios das disciplinas do Eixo Informação e Comunicação.">
+<style>
+  :root{
+    --tinta:#12263A; --papel:#F7F8FA; --cartao:#FFFFFF;
+    --marca:#0B4F8A; --apoio:#1B9A6B; --linha:#DDE3EA;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--papel); color:var(--tinta);
+    font-family:Calibri,Carlito,"Segoe UI",system-ui,-apple-system,sans-serif;
+    font-size:17px; line-height:1.5;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 20px 72px}
+
+  header.topo{background:var(--marca); color:#fff; padding:36px 0 30px; margin-bottom:28px}
+  header.topo .wrap{padding-bottom:0}
+  .rede{font-size:13px; letter-spacing:.09em; text-transform:uppercase; opacity:.85; margin:0}
+  header.topo h1{font-size:30px; line-height:1.15; margin:10px 0 6px; font-weight:700}
+  .assinatura{margin:0; font-size:15px; opacity:.92}
+
+  .barra{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:26px}
+  #busca{
+    flex:1 1 260px; padding:12px 14px; font:inherit; color:inherit;
+    border:1px solid var(--linha); border-radius:8px; background:var(--cartao);
+  }
+  #busca:focus{outline:3px solid var(--apoio); outline-offset:1px; border-color:var(--apoio)}
+  .resumo{font-size:14px; color:#5a6a7a}
+
+  .disciplina{background:var(--cartao); border:1px solid var(--linha); border-radius:12px; padding:22px; margin-bottom:20px}
+  .disciplina-topo{display:flex; gap:16px; align-items:flex-start; margin-bottom:14px}
+  .ordem{
+    flex:0 0 auto; font-size:14px; font-weight:700; color:var(--marca);
+    border:2px solid var(--marca); border-radius:8px; padding:6px 9px; line-height:1;
+  }
+  .disciplina h2{font-size:21px; margin:0 0 3px}
+  .meta{margin:0; font-size:13px; color:#5a6a7a; letter-spacing:.02em}
+  .descricao{margin:6px 0 0; font-size:15px; color:#40515f}
+
+  .modulo{border-top:1px solid var(--linha); padding:4px 0}
+  .modulo summary{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    cursor:pointer; padding:11px 2px; font-weight:600; list-style:none;
+  }
+  .modulo summary::-webkit-details-marker{display:none}
+  .modulo summary:focus-visible{outline:3px solid var(--apoio); outline-offset:2px; border-radius:6px}
+  .modulo-nome::before{content:"▸ "; color:var(--marca)}
+  .modulo[open] .modulo-nome::before{content:"▾ "}
+  .contagem{font-size:12px; font-weight:700; color:#5a6a7a; background:var(--papel); border-radius:999px; padding:3px 9px}
+
+  ul.arquivos{list-style:none; margin:0 0 10px; padding:0}
+  ul.arquivos a{
+    display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;
+    padding:11px 10px; border-radius:8px; min-height:46px;
+  }
+  ul.arquivos a:hover{background:var(--papel)}
+  ul.arquivos a:focus-visible{outline:3px solid var(--apoio); outline-offset:-2px}
+  .tipo{
+    flex:0 0 auto; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    color:#fff; background:#7b8794; border-radius:5px; padding:4px 7px; min-width:48px; text-align:center;
+  }
+  .tipo-pdf{background:#B3261E}
+  .tipo-pptx{background:#C24E1F}
+  .tipo-docx{background:var(--marca)}
+  .tipo-xlsx{background:var(--apoio)}
+  .nome{flex:1 1 auto}
+  .tamanho{flex:0 0 auto; font-size:13px; color:#5a6a7a}
+
+  .vazio{display:none; padding:26px 4px; color:#5a6a7a}
+  footer{border-top:1px solid var(--linha); margin-top:34px; padding-top:18px; font-size:13px; color:#5a6a7a}
+  footer p{margin:3px 0}
+
+  @media (max-width:560px){
+    body{font-size:16px}
+    header.topo h1{font-size:24px}
+    .disciplina{padding:16px}
+    .tamanho{display:none}
+  }
+  @media print{header.topo{background:none; color:var(--tinta)}}
+</style>
+</head>
+<body>
+<header class="topo">
+  <div class="wrap">
+    <p class="rede">SEDUC-CE · Eixo Informação e Comunicação</p>
+    <h1>Materiais de aula</h1>
+    <p class="assinatura">E.E.E.P. Lúcia Helena Viana Ribeiro · Prof. Francisco Ericson Cornélio da Costa</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="barra">
+    <input id="busca" type="search" placeholder="Buscar por disciplina, módulo ou arquivo" aria-label="Buscar material">
+    <p class="resumo">4 disciplinas · 13 arquivos</p>
+  </div>
+
+      <section class="disciplina" data-busca="banco de dados ">
+        <header class="disciplina-topo">
+          <span class="ordem">01</span>
+          <div>
+            <h2>Banco de Dados</h2>
+            <p class="meta">2 arquivos</p>
+            
+          </div>
+        </header>
+        
+        <details class="modulo" open>
+          <summary>
+            <span class="modulo-nome">Materiais gerais</span>
+            <span class="contagem">2</span>
+          </summary>
+          <ul class="arquivos">
+            
+            <li data-busca="apostila_bancodedados_modulo01 materiais gerais banco de dados">
+              <a href="disciplinas%5CBanco%20de%20Dados%5CApostila_BancoDeDados_Modulo01.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Apostila_BancoDeDados_Modulo01</span>
+                <span class="tamanho">26 KB</span>
+              </a>
+            </li>
+            <li data-busca="banco_de_dados_modulo01 materiais gerais banco de dados">
+              <a href="disciplinas%5CBanco%20de%20Dados%5CBanco_de_Dados_Modulo01.pptx" download>
+                <span class="tipo tipo-pptx">pptx</span>
+                <span class="nome">Banco_de_Dados_Modulo01</span>
+                <span class="tamanho">1012 KB</span>
+              </a>
+            </li>
+          </ul>
+        </details>
+      </section>
+      <section class="disciplina" data-busca="gerenciador de conteudo ">
+        <header class="disciplina-topo">
+          <span class="ordem">02</span>
+          <div>
+            <h2>Gerenciador de Conteudo</h2>
+            <p class="meta">1 arquivo</p>
+            
+          </div>
+        </header>
+        
+        <details class="modulo" open>
+          <summary>
+            <span class="modulo-nome">Materiais gerais</span>
+            <span class="contagem">1</span>
+          </summary>
+          <ul class="arquivos">
+            
+            <li data-busca="01 - apostila mvc configuração inicial materiais gerais gerenciador de conteudo">
+              <a href="disciplinas%5CGerenciador%20de%20Conteudo%5C01%20-%20APOSTILA%20MVC%20CONFIGURA%C3%87%C3%83O%20INICIAL.pdf" download>
+                <span class="tipo tipo-pdf">pdf</span>
+                <span class="nome">01 - APOSTILA MVC CONFIGURAÇÃO INICIAL</span>
+                <span class="tamanho">244 KB</span>
+              </a>
+            </li>
+          </ul>
+        </details>
+      </section>
+      <section class="disciplina" data-busca="lógica de programação ">
+        <header class="disciplina-topo">
+          <span class="ordem">03</span>
+          <div>
+            <h2>Lógica de Programação</h2>
+            <p class="meta">2 arquivos</p>
+            
+          </div>
+        </header>
+        
+        <details class="modulo" open>
+          <summary>
+            <span class="modulo-nome">Materiais gerais</span>
+            <span class="contagem">2</span>
+          </summary>
+          <ul class="arquivos">
+            
+            <li data-busca="apostila_logica_modulo1 materiais gerais lógica de programação">
+              <a href="disciplinas%5CL%C3%B3gica%20de%20Programa%C3%A7%C3%A3o%5CApostila_Logica_Modulo1.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Apostila_Logica_Modulo1</span>
+                <span class="tamanho">27 KB</span>
+              </a>
+            </li>
+            <li data-busca="apostila_logica_modulo2 materiais gerais lógica de programação">
+              <a href="disciplinas%5CL%C3%B3gica%20de%20Programa%C3%A7%C3%A3o%5CApostila_Logica_Modulo2.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Apostila_Logica_Modulo2</span>
+                <span class="tamanho">22 KB</span>
+              </a>
+            </li>
+          </ul>
+        </details>
+      </section>
+      <section class="disciplina" data-busca="redes de computadores ">
+        <header class="disciplina-topo">
+          <span class="ordem">04</span>
+          <div>
+            <h2>Redes de Computadores</h2>
+            <p class="meta">8 arquivos</p>
+            
+          </div>
+        </header>
+        
+        <details class="modulo" open>
+          <summary>
+            <span class="modulo-nome">Materiais gerais</span>
+            <span class="contagem">8</span>
+          </summary>
+          <ul class="arquivos">
+            
+            <li data-busca="redes_60h_modulo_1_fundamentos_de_redes materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_1_Fundamentos_de_Redes.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_1_Fundamentos_de_Redes</span>
+                <span class="tamanho">26 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_2_cabeamento_estruturado materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_2_Cabeamento_Estruturado.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_2_Cabeamento_Estruturado</span>
+                <span class="tamanho">24 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_3_redes_sem_fio_classificacao_e_topologias materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_3_Redes_sem_Fio_Classificacao_e_Topologias.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_3_Redes_sem_Fio_Classificacao_e_Topologias</span>
+                <span class="tamanho">19 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_4_modelos_de_referencia_osi_e_tcp_ip materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_4_Modelos_de_Referencia_OSI_e_TCP_IP.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_4_Modelos_de_Referencia_OSI_e_TCP_IP</span>
+                <span class="tamanho">28 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_5_protocolos_tcp_ip_e_numeracao_binaria materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_5_Protocolos_TCP_IP_e_Numeracao_Binaria.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_5_Protocolos_TCP_IP_e_Numeracao_Binaria</span>
+                <span class="tamanho">27 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_6_enderecamento_ip_e_seguranca_de_redes materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_6_Enderecamento_IP_e_Seguranca_de_Redes.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_6_Enderecamento_IP_e_Seguranca_de_Redes</span>
+                <span class="tamanho">45 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_7_compartilhamento_e_armazenamento_em_rede materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_7_Compartilhamento_e_Armazenamento_em_Rede.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_7_Compartilhamento_e_Armazenamento_em_Rede</span>
+                <span class="tamanho">23 KB</span>
+              </a>
+            </li>
+            <li data-busca="redes_60h_modulo_8_servidores_de_rede materiais gerais redes de computadores">
+              <a href="disciplinas%5CRedes%20de%20Computadores%5CRedes_60h_Modulo_8_Servidores_de_Rede.docx" download>
+                <span class="tipo tipo-docx">docx</span>
+                <span class="nome">Redes_60h_Modulo_8_Servidores_de_Rede</span>
+                <span class="tamanho">27 KB</span>
+              </a>
+            </li>
+          </ul>
+        </details>
+      </section>
+  <p class="vazio" id="vazio">Nenhum material corresponde a essa busca. Tente outro termo.</p>
+</main>
+
+<footer class="wrap">
+  <p>Horizonte, Ceará · Atualizado em 11 de agosto de 2026</p>
+  <p>Material de uso didático. Dúvidas sobre os arquivos devem ser tratadas em sala.</p>
+</footer>
+
+<script>
+(function(){
+  var campo = document.getElementById('busca');
+  var vazio = document.getElementById('vazio');
+  var discs = Array.prototype.slice.call(document.querySelectorAll('.disciplina'));
+
+  campo.addEventListener('input', function(){
+    var termo = campo.value.trim().toLowerCase();
+    var achou = false;
+
+    discs.forEach(function(d){
+      var casaDisc = !termo || d.dataset.busca.indexOf(termo) > -1;
+      var visiveis = 0;
+
+      d.querySelectorAll('li').forEach(function(li){
+        var ok = casaDisc || li.dataset.busca.indexOf(termo) > -1;
+        li.hidden = !ok;
+        if (ok) visiveis++;
+      });
+
+      d.querySelectorAll('details').forEach(function(m){
+        var n = m.querySelectorAll('li:not([hidden])').length;
+        m.hidden = n === 0;
+        if (termo && n > 0) m.open = true;
+      });
+
+      d.hidden = visiveis === 0;
+      if (visiveis > 0) achou = true;
+    });
+
+    vazio.style.display = achou ? 'none' : 'block';
+  });
+})();
+</script>
+</body>
+</html>
