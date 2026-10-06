@@ -91,6 +91,10 @@ const tituloDe = (caminho, alternativo) => nomes[caminho] || alternativo;
 
 const ordenar = (a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' });
 
+// Tira a numeração digitada à mão ("001 - ", "01_") do título exibido:
+// o número mostrado no índice vem da data de modificação.
+const semPrefixo = (titulo) => titulo.replace(/^\d+[\s\-_.]+/, '') || titulo;
+
 /* ------------------------------------------------------------------ */
 /* LEITURA                                                             */
 /* ------------------------------------------------------------------ */
@@ -118,14 +122,18 @@ function lerArquivos(dir) {
     .map((d) => {
       const arquivo = normalizar(dir, d.name, false);
       const caminho = join(dir, arquivo);
+      const info = statSync(caminho);
       return {
-        titulo: tituloDe(caminho, basename(arquivo, extname(arquivo))),
+        titulo: semPrefixo(tituloDe(caminho, basename(arquivo, extname(arquivo)))),
         tipo: extname(arquivo).slice(1),
         href: caminho,
-        tamanho: formatarTamanho(statSync(caminho).size),
+        tamanho: formatarTamanho(info.size),
+        modificado: info.mtimeMs,
       };
     })
-    .sort((a, b) => ordenar(a.titulo, b.titulo));
+    // Do mais antigo para o mais novo; o número exibido segue essa ordem.
+    .sort((a, b) => a.modificado - b.modificado || ordenar(a.titulo, b.titulo))
+    .map((f, i) => ({ ...f, numero: String(i + 1).padStart(2, '0') }));
 }
 
 function lerMeta(dir) {
@@ -206,6 +214,7 @@ function render(disciplinas) {
             ${m.itens.map((f) => `
             <li data-busca="${esc((f.titulo + ' ' + m.titulo + ' ' + d.titulo).toLowerCase())}">
               <a href="${esc(f.href)}">
+                <span class="numero">${esc(f.numero)}</span>
                 <span class="tipo tipo-${esc(f.tipo)}">${esc(f.tipo)}</span>
                 <span class="nome">${esc(f.titulo)}</span>
                 <span class="tamanho">${esc(f.tamanho)}</span>
@@ -278,6 +287,7 @@ function render(disciplinas) {
   }
   ul.arquivos a:hover{background:var(--papel)}
   ul.arquivos a:focus-visible{outline:3px solid var(--apoio); outline-offset:-2px}
+  .numero{flex:0 0 auto; font-size:13px; font-weight:700; color:var(--marca); min-width:22px; font-variant-numeric:tabular-nums}
   .tipo{
     flex:0 0 auto; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
     color:#fff; background:#7b8794; border-radius:5px; padding:4px 7px; min-width:48px; text-align:center;
