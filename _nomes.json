@@ -40,6 +40,16 @@
   "disciplinas\\banco-de-dados\\guia-revisao-bancodedados-2.pdf": "Guia_Revisao_BancoDeDados",
   "disciplinas\\redes-de-computadores\\005-redes-60h-resumo-para-a-prova-ate-camada-de-aplicacao.pdf": "005-Redes_60h_Resumo_para_a_Prova_ate_Camada_de_Aplicacao",
   "disciplinas\\banco-de-dados\\modelo-logico.pdf": "Modelo Logico.",
+<<<<<<< HEAD
   "disciplinas\\banco-de-dados\\controle-listas-sql.xlsx": "Controle_Listas_SQL",
   "disciplinas\\logica-de-programacao\\o-laco-for-em-python.pdf": "O Laço For em Python"
+=======
+  "disciplinas\\logica-de-programacao\\lista-funcoes-pratica.md": "lista-funcoes-pratica",
+  "disciplinas\\logica-de-programacao\\slides-python-operadores-funcoes.pdf": "Slides_Python_Operadores_funcoes",
+  "disciplinas\\banco-de-dados\\banco-de-dados-modulo03.pdf": "Banco_de_Dados_Modulo03",
+  "disciplinas\\banco-de-dados\\listas-sql-biblioteca-aluno.pdf": "Listas_SQL_Biblioteca_Aluno",
+  "disciplinas\\banco-de-dados\\controle-listas-sql.xlsx": "Controle_Listas_SQL",
+  "disciplinas\\logica-de-programacao\\lista-funcoes-pratica.pdf": "lista-funcoes-pratica",
+  "disciplinas\\logica-de-programacao\\lista-funcoes.pdf": "lista-funcoes"
+>>>>>>> 75cb01e9c26a3931e80f09ff8d62978b514a6818
 }
